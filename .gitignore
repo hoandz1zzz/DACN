@@ -1,0 +1,8 @@
+node_modules/
+__pycache__/
+*.pyc
+.env
+
+# Exclude all uploaded images except .gitkeep
+backend/uploads/*
+!backend/uploads/.gitkeep

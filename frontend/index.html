@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NHẬN DẠNG BIỂN SỐ XE MÁY VỚI COMPONENT AT-LPR</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header Bar -->
+  <div class="top-header">
+    <h1 class="header-title">NHẬN DẠNG BIỂN SỐ XE MÁY VỚI HỆ THỐNG BÃI XE THÔNG MINH</h1>
+  </div>
+
+  <div class="main-container">
+    <!-- Mode Select / Tabs -->
+    <div class="mode-bar">
+      <button class="mode-btn active" id="modeEntryBtn" onclick="switchMode('entry')">GỬI XE VÀO BÃI</button>
+      <button class="mode-btn" id="modeExitBtn" onclick="switchMode('exit')">CHO XE RA BÃI</button>
+      <button class="mode-btn" id="modeListBtn" onclick="switchMode('list')">DANH SÁCH XE TRONG BÃI</button>
+    </div>
+
+    <!-- MAIN DEMO WORKSPACE -->
+    <div class="workspace" id="mainWorkspace">
+
+      <!-- TOP ROW: CAMERA & TRÍCH VÙNG -->
+      <div class="row top-row">
+        <!-- Box 1: Original Camera Image -->
+        <div class="box-panel camera-panel">
+          <div class="panel-title">VIDEO TỪ CAMERA</div>
+          <div class="image-box" id="dropArea" onclick="document.getElementById('fileInput').click()">
+            <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFileSelect(this.files[0])">
+            <img id="cameraImg" src="" alt="Video từ Camera" style="display:none">
+            <div id="uploadPrompt" class="upload-prompt">
+              <p>NHẤP VÀO ĐÂY ĐỂ CHỌN ẢNH KHUNG HÌNH CAMERA</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Arrow 1: Right Arrow -->
+        <div class="arrow-container">
+          <div class="arrow-right">⋙⋙</div>
+        </div>
+
+        <!-- Box 2: Trích Vùng Biển Số -->
+        <div class="box-panel detect-panel">
+          <div class="panel-title">TRÍCH VÙNG BIỂN SỐ</div>
+          <div class="image-box">
+            <img id="detectedImg" src="" alt="Trích vùng biển số" style="display:none">
+            <div id="detectPrompt" class="placeholder-text">ĐANG CHỜ BẤM NHẬN DẠNG...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MIDDLE ROW: DOWN ARROW -->
+      <div class="row mid-row">
+        <div class="spacer"></div>
+        <div class="arrow-down-container">
+          <div class="arrow-down">︾︾</div>
+        </div>
+      </div>
+
+      <!-- BOTTOM ROW: BUTTON, RESULT, CROPPED PLATE -->
+      <div class="row bottom-row">
+        <!-- Box 3: Big Green Action Button -->
+        <div class="action-panel">
+          <button class="action-btn" id="actionBtn" onclick="processAction()" disabled>
+            NHẬN DẠNG<br>BIỂN SỐ
+          </button>
+        </div>
+
+        <!-- Arrow Left -->
+        <div class="arrow-container">
+          <div class="arrow-left">⋘⋘</div>
+        </div>
+
+        <!-- Box 4: Result Box -->
+        <div class="result-panel">
+          <div class="result-title">KẾT QUẢ NHẬN DẠNG</div>
+          <div class="result-box">
+            <span id="plateResultText" class="plate-text">CHƯA CÓ KẾT QUẢ</span>
+          </div>
+          <div id="extraInfo" class="extra-info"></div>
+        </div>
+
+        <!-- Arrow Left -->
+        <div class="arrow-container">
+          <div class="arrow-left">⋘⋘</div>
+        </div>
+
+        <!-- Box 5: Cropped Plate Zoom -->
+        <div class="crop-panel">
+          <div class="panel-title">CẮT VÙNG BIỂN SỐ</div>
+          <div class="crop-box">
+            <img id="croppedPlateImg" src="" alt="Cắt vùng biển số" style="display:none">
+            <div id="cropPrompt" class="placeholder-text">CẮT BIỂN SỐ</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LIST WORKSPACE (XE TRONG BÃI) -->
+    <div class="workspace" id="listWorkspace" style="display:none">
+      <div class="panel-title" style="margin-bottom:16px">DANH SÁCH TẤT CẢ XE ĐANG GỬI TRONG BÃI</div>
+      <table class="vehicle-table">
+        <thead>
+          <tr>
+            <th>MÃ VÉ</th>
+            <th>BIỂN SỐ XE</th>
+            <th>ẢNH LÚC VÀO BÃI</th>
+            <th>THỜI GIAN VÀO BÃI</th>
+            <th>TRẠNG THÁI</th>
+            <th>THAO TÁC</th>
+          </tr>
+        </thead>
+        <tbody id="vehicleTableBody">
+          <tr><td colspan="6" style="text-align:center">Đang tải danh sách xe...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

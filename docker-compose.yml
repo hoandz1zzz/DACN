@@ -1,0 +1,47 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: dacn_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: smart_parking_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  ai: 
+    build: ./AI
+    container_name: dacn_ai
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/uploads:/app/backend/uploads
+      - ./AI/main.py:/app/main.py
+      - easyocr_model_data:/root/.EasyOCR
+
+  backend: 
+    build: ./backend
+    container_name: dacn_backend
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=rootpassword
+      - DB_NAME=smart_parking_db
+      - PYTHON_AI_URL=http://ai:5000/detect-plate
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./frontend:/app/frontend
+      - ./backend/server.js:/app/server.js
+    depends_on:
+      - db
+      - ai
+
+volumes:
+  mysql_data:
+  easyocr_model_data:
