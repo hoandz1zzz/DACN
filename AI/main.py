@@ -162,3 +162,149 @@ async def detect_plate(request: ImageRequest):
         "cropped_image": crop_rel_path,
         "detected_image": detect_rel_path
     }
+
+class FaceMatchRequest(BaseModel):
+    face_image_in: str
+    face_image_out: str
+
+import torchvision.transforms as T
+import torch.nn.functional as F
+from torchvision.models import mobilenet_v3_small, MobileNet_V3_Small_Weights
+
+try:
+    weights = MobileNet_V3_Small_Weights.DEFAULT
+    mobilenet_model = mobilenet_v3_small(weights=weights)
+    mobilenet_model.eval()
+    face_feature_extractor = torch.nn.Sequential(*list(mobilenet_model.children())[:-1])
+    transform_pipeline = T.Compose([
+        T.Resize((224, 224)),
+        T.ToTensor(),
+        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+    print("Mô hình AI Feature Extractor cho khuôn mặt đã sẵn sàng.")
+except Exception as e:
+    print(f"Không thể khởi tạo MobileNet Feature Extractor: {e}")
+    face_feature_extractor = None
+
+def get_face_crop(img_np):
+    try:
+        results = model(img_np, verbose=False)
+        for r in results:
+            for box in r.boxes:
+                cls_id = int(box.cls[0].item())
+                if cls_id == 0: # Person
+                    b = box.xyxy[0].tolist()
+                    x1, y1, x2, y2 = int(b[0]), int(b[1]), int(b[2]), int(b[3])
+                    head_y2 = y1 + int((y2 - y1) * 0.50)
+                    h_img, w_img, _ = img_np.shape
+                    x1, y1 = max(0, x1), max(0, y1)
+                    x2, head_y2 = min(w_img, x2), min(h_img, head_y2)
+                    if x2 > x1 and head_y2 > y1:
+                        return img_np[y1:head_y2, x1:x2]
+    except Exception as e:
+        print(f"Lỗi phát hiện người/mặt với YOLO: {e}")
+    
+    h, w, _ = img_np.shape
+    y1, y2 = int(h * 0.05), int(h * 0.7)
+    x1, x2 = int(w * 0.15), int(w * 0.85)
+    return img_np[y1:y2, x1:x2]
+
+def compute_face_similarity(face1_np, face2_np):
+    deep_sim = 0.0
+    cos_sim = 0.0
+    if face_feature_extractor is not None:
+        try:
+            pil1 = Image.fromarray(face1_np)
+            pil2 = Image.fromarray(face2_np)
+            
+            t1 = transform_pipeline(pil1).unsqueeze(0)
+            t2 = transform_pipeline(pil2).unsqueeze(0)
+            
+            with torch.no_grad():
+                f1 = face_feature_extractor(t1).squeeze()
+                f2 = face_feature_extractor(t2).squeeze()
+                
+                if f1.dim() > 1:
+                    f1 = f1.view(f1.size(0), -1).mean(dim=-1)
+                if f2.dim() > 1:
+                    f2 = f2.view(f2.size(0), -1).mean(dim=-1)
+                
+                f1 = F.normalize(f1, p=2, dim=0)
+                f2 = F.normalize(f2, p=2, dim=0)
+                
+                cos_sim = float(F.cosine_similarity(f1.unsqueeze(0), f2.unsqueeze(0)).item())
+                # Recalibrated mapping: 0.10 -> 0%, 0.35 -> 50%, 0.60 -> 100%
+                deep_sim = max(0.0, min(1.0, (cos_sim - 0.10) / 0.50))
+        except Exception as err:
+            print(f"Lỗi deep feature extraction: {err}")
+
+    gray1 = cv2.cvtColor(face1_np, cv2.COLOR_RGB2GRAY)
+    gray2 = cv2.cvtColor(face2_np, cv2.COLOR_RGB2GRAY)
+    
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    c1 = clahe.apply(cv2.resize(gray1, (128, 128)))
+    c2 = clahe.apply(cv2.resize(gray2, (128, 128)))
+    
+    hist1 = cv2.calcHist([c1], [0], None, [32], [0, 256])
+    hist2 = cv2.calcHist([c2], [0], None, [32], [0, 256])
+    cv2.normalize(hist1, hist1)
+    cv2.normalize(hist2, hist2)
+    
+    gray_hist_sim = float(cv2.compareHist(hist1, hist2, cv2.HISTCMP_CORREL))
+    gray_hist_sim = max(0.0, gray_hist_sim)
+
+    if face_feature_extractor is not None:
+        final_sim = 0.80 * deep_sim + 0.20 * gray_hist_sim
+    else:
+        final_sim = gray_hist_sim
+
+    print(f"DEBUG FACE MATCH: cos_sim={cos_sim:.3f}, deep_sim={deep_sim:.3f}, gray_hist_sim={gray_hist_sim:.3f} -> final_sim={final_sim:.3f}")
+    return round(final_sim * 100, 1)
+
+@app.post("/verify-face")
+async def verify_face_endpoint(request: FaceMatchRequest):
+    img_in_path = request.face_image_in
+    img_out_path = request.face_image_out
+
+    def resolve_path(p):
+        if not p:
+            return None
+        filename = os.path.basename(p)
+        paths = [p, os.path.join('/app', p), os.path.join('/app/backend', p), os.path.join('/app/uploads', filename)]
+        for path in paths:
+            if os.path.exists(path):
+                return path
+        return None
+
+    path1 = resolve_path(img_in_path)
+    path2 = resolve_path(img_out_path)
+
+    if not path1 or not path2:
+        return {
+            "is_match": True,
+            "similarity": 100.0,
+            "message": "Không có ảnh khuôn mặt để đối soát"
+        }
+
+    try:
+        img1 = np.array(Image.open(path1).convert('RGB'))
+        img2 = np.array(Image.open(path2).convert('RGB'))
+
+        face1 = get_face_crop(img1)
+        face2 = get_face_crop(img2)
+
+        similarity_pct = compute_face_similarity(face1, face2)
+        is_match = similarity_pct >= 40.0
+
+        return {
+            "is_match": is_match,
+            "similarity": similarity_pct,
+            "message": f"Khuôn mặt trùng khớp chủ xe ({similarity_pct}%)" if is_match else f"CẢNH BÁO: Khuôn mặt KHÔNG trùng khớp với chủ xe! (Độ khớp: {similarity_pct}%)"
+        }
+    except Exception as e:
+        print(f"Lỗi so sánh khuôn mặt: {e}")
+        return {
+            "is_match": True,
+            "similarity": 100.0,
+            "message": f"Lỗi xử lý khuôn mặt: {e}"
+        }

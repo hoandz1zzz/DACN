@@ -17,9 +17,27 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'frontend/index.html'));
 });
 
+app.get('/lookup', (req, res) => {
+    res.sendFile(path.join(__dirname, 'frontend/lookup.html'));
+});
+
 app.get('/api/vehicles', (req, res) => {
     const sql = "SELECT * FROM parking_sessions WHERE status = 'IN' ORDER BY entry_time DESC";
     db.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ error: 'Lỗi database: ' + err.message });
+        res.json(results);
+    });
+});
+
+app.get('/api/lookup', (req, res) => {
+    const { plate } = req.query;
+    if (!plate) {
+        return res.status(400).json({ error: 'Vui lòng nhập biển số xe để tìm kiếm' });
+    }
+    const cleanPlate = plate.trim().replace(/[-.]/g, '');
+    const sql = "SELECT * FROM parking_sessions WHERE status = 'IN' AND (plate_number LIKE ? OR REPLACE(REPLACE(plate_number, '-', ''), '.', '') LIKE ?)";
+    const searchPattern = `%${cleanPlate}%`;
+    db.query(sql, [searchPattern, searchPattern], (err, results) => {
         if (err) return res.status(500).json({ error: 'Lỗi database: ' + err.message });
         res.json(results);
     });
@@ -50,20 +68,66 @@ const storage = multer.diskStorage({
         cb(null, 'uploads/');
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
+        cb(null, Date.now() + '-' + Math.round(Math.random() * 1E4) + path.extname(file.originalname));
     }
 });
-const upload = multer({ storage: storage });
+const uploadFields = multer({ storage: storage }).fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'face_image', maxCount: 1 }
+]);
 
 const PYTHON_AI_URL = process.env.PYTHON_AI_URL || 'http://127.0.0.1:5000/detect-plate';
+const PYTHON_AI_FACE_URL = process.env.PYTHON_AI_FACE_URL || 'http://ai:5000/verify-face';
 
-app.post('/api/entry', upload.single('image'), async (req, res) => {
+const ALL_SLOTS = [
+    'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8',
+    'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8',
+    'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8',
+    'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8'
+];
+
+app.get('/api/slots', (req, res) => {
+    const sql = "SELECT * FROM parking_sessions WHERE status = 'IN'";
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ error: 'Lỗi database: ' + err.message });
+        
+        const occupiedMap = {};
+        (results || []).forEach(item => {
+            if (item.slot_number) {
+                occupiedMap[item.slot_number] = item;
+            }
+        });
+
+        const slotsList = ALL_SLOTS.map(slot => {
+            if (occupiedMap[slot]) {
+                return {
+                    slot_number: slot,
+                    is_occupied: true,
+                    session: occupiedMap[slot]
+                };
+            }
+            return {
+                slot_number: slot,
+                is_occupied: false,
+                session: null
+            };
+        });
+
+        res.json(slotsList);
+    });
+});
+
+app.post('/api/entry', uploadFields, async (req, res) => {
     try {
-        if (!req.file) {
+        const imageFile = req.files && req.files['image'] ? req.files['image'][0] : null;
+        const faceFile = req.files && req.files['face_image'] ? req.files['face_image'][0] : null;
+
+        if (!imageFile) {
             return res.status(400).json({ error: 'Vui lòng upload ảnh xe vào' });
         }
 
-        const imagePath = req.file.path;
+        const imagePath = imageFile.path;
+        const facePath = faceFile ? faceFile.path : null;
 
         let plateNumber = "UNKNOWN"; 
         let croppedImage = "";
@@ -93,17 +157,25 @@ app.post('/api/entry', upload.single('image'), async (req, res) => {
         }
 
         function insertSession() {
-            const sql = "INSERT INTO parking_sessions (plate_number, image_in, status) VALUES (?, ?, 'IN')";
-            db.query(sql, [plateNumber, imagePath], (err, result) => {
-                if (err) return res.status(500).json({ error: 'Lỗi database: ' + err.message });
-                
-                res.json({
-                    message: 'Xe vào thành công',
-                    sessionId: result.insertId,
-                    plate_number: plateNumber,
-                    image_in: imagePath,
-                    cropped_image: croppedImage,
-                    detected_image: detectedImage
+            const getSlotsSql = "SELECT slot_number FROM parking_sessions WHERE status = 'IN'";
+            db.query(getSlotsSql, (slotErr, slotResults) => {
+                const occupiedSlots = (slotResults || []).map(r => r.slot_number).filter(Boolean);
+                const assignedSlot = ALL_SLOTS.find(s => !occupiedSlots.includes(s)) || 'A-01';
+
+                const sql = "INSERT INTO parking_sessions (plate_number, slot_number, image_in, face_image_in, status) VALUES (?, ?, ?, ?, 'IN')";
+                db.query(sql, [plateNumber, assignedSlot, imagePath, facePath], (err, result) => {
+                    if (err) return res.status(500).json({ error: 'Lỗi database: ' + err.message });
+                    
+                    res.json({
+                        message: 'Xe vào thành công',
+                        sessionId: result.insertId,
+                        plate_number: plateNumber,
+                        slot_number: assignedSlot,
+                        image_in: imagePath,
+                        face_image_in: facePath,
+                        cropped_image: croppedImage,
+                        detected_image: detectedImage
+                    });
                 });
             });
         }
@@ -113,13 +185,18 @@ app.post('/api/entry', upload.single('image'), async (req, res) => {
     }
 });
 
-app.post('/api/exit', upload.single('image'), async (req, res) => {
+app.post('/api/exit', uploadFields, async (req, res) => {
     try {
-        if (!req.file) {
+        const imageFile = req.files && req.files['image'] ? req.files['image'][0] : null;
+        const faceFile = req.files && req.files['face_image'] ? req.files['face_image'][0] : null;
+
+        if (!imageFile) {
             return res.status(400).json({ error: 'Vui lòng upload ảnh xe ra' });
         }
 
-        const imagePath = req.file.path;
+        const imagePath = imageFile.path;
+        const facePath = faceFile ? faceFile.path : null;
+
         let plateNumber = "";
         let croppedImage = "";
         let detectedImage = "";
@@ -135,7 +212,7 @@ app.post('/api/exit', upload.single('image'), async (req, res) => {
 
         const findSql = "SELECT * FROM parking_sessions WHERE plate_number = ? AND status = 'IN' ORDER BY entry_time DESC LIMIT 1";
         
-        db.query(findSql, [plateNumber], (err, results) => {
+        db.query(findSql, [plateNumber], async (err, results) => {
             if (err) return res.status(500).json({ error: 'Lỗi database: ' + err.message });
             
             if (results.length === 0) {
@@ -143,10 +220,36 @@ app.post('/api/exit', upload.single('image'), async (req, res) => {
             }
 
             const session = results[0];
+            const isOverride = req.body.override === 'true';
+
+            // Facial verification if face_image_in and facePath exist
+            let faceMatchResult = { is_match: true, similarity: 100, message: "Khuôn mặt hợp lệ" };
+            if (session.face_image_in && facePath) {
+                try {
+                    const faceAiRes = await axios.post(PYTHON_AI_FACE_URL, {
+                        face_image_in: session.face_image_in,
+                        face_image_out: facePath
+                    });
+                    faceMatchResult = faceAiRes.data;
+                } catch (faceErr) {
+                    console.log('Lỗi gọi AI so sánh khuôn mặt:', faceErr.message);
+                }
+            }
+
+            if (!faceMatchResult.is_match && !isOverride) {
+                return res.status(400).json({
+                    error: faceMatchResult.message || 'Khuôn mặt người lấy xe KHÔNG trùng khớp với chủ xe lúc vào!',
+                    similarity: faceMatchResult.similarity,
+                    requires_override: true,
+                    plate_number: plateNumber,
+                    session_id: session.id
+                });
+            }
+
             const parkingFee = 5000; 
-            const updateSql = "UPDATE parking_sessions SET exit_time = CURRENT_TIMESTAMP, image_out = ?, status = 'OUT', fee = ? WHERE id = ?";
+            const updateSql = "UPDATE parking_sessions SET exit_time = CURRENT_TIMESTAMP, image_out = ?, face_image_out = ?, status = 'OUT', fee = ? WHERE id = ?";
             
-            db.query(updateSql, [imagePath, parkingFee, session.id], (updateErr) => {
+            db.query(updateSql, [imagePath, facePath, parkingFee, session.id], (updateErr) => {
                 if (updateErr) return res.status(500).json({ error: 'Lỗi cập nhật data: ' + updateErr.message });
                 
                 res.json({
@@ -155,7 +258,8 @@ app.post('/api/exit', upload.single('image'), async (req, res) => {
                     entry_time: session.entry_time,
                     fee: parkingFee,
                     cropped_image: croppedImage,
-                    detected_image: detectedImage
+                    detected_image: detectedImage,
+                    face_verification: faceMatchResult
                 });
             });
         });

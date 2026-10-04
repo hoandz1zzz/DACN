@@ -17,22 +17,35 @@
     <div class="mode-bar">
       <button class="mode-btn active" id="modeEntryBtn" onclick="switchMode('entry')">GỬI XE VÀO BÃI</button>
       <button class="mode-btn" id="modeExitBtn" onclick="switchMode('exit')">CHO XE RA BÃI</button>
+      <button class="mode-btn" id="modeMapBtn" onclick="switchMode('map')">SƠ ĐỒ BÃI XE (VỊ TRÍ)</button>
       <button class="mode-btn" id="modeListBtn" onclick="switchMode('list')">DANH SÁCH XE TRONG BÃI</button>
     </div>
 
     <!-- MAIN DEMO WORKSPACE -->
     <div class="workspace" id="mainWorkspace">
 
-      <!-- TOP ROW: CAMERA & TRÍCH VÙNG -->
+      <!-- TOP ROW: CAMERA XE, KHUÔN MẶT & TRÍCH VÙNG -->
       <div class="row top-row">
         <!-- Box 1: Original Camera Image -->
         <div class="box-panel camera-panel">
-          <div class="panel-title">VIDEO TỪ CAMERA</div>
+          <div class="panel-title">VIDEO TỪ CAMERA XE</div>
           <div class="image-box" id="dropArea" onclick="document.getElementById('fileInput').click()">
             <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFileSelect(this.files[0])">
             <img id="cameraImg" src="" alt="Video từ Camera" style="display:none">
             <div id="uploadPrompt" class="upload-prompt">
-              <p>NHẤP VÀO ĐÂY ĐỂ CHỌN ẢNH KHUNG HÌNH CAMERA</p>
+              <p>NHẤP VÀO ĐÂY ĐỂ CHỌN ẢNH KHUNG HÌNH CAMERA XE</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Box 1B: Face Image Camera Input -->
+        <div class="box-panel face-panel">
+          <div class="panel-title">ẢNH KHUÔN MẶT CHỦ XE</div>
+          <div class="image-box" id="faceDropArea" onclick="document.getElementById('faceFileInput').click()">
+            <input type="file" id="faceFileInput" accept="image/*" style="display:none" onchange="handleFaceFileSelect(this.files[0])">
+            <img id="faceCameraImg" src="" alt="Ảnh khuôn mặt" style="display:none">
+            <div id="faceUploadPrompt" class="upload-prompt">
+              <p>NHẤP VÀO ĐÂY ĐỂ CHỌN ẢNH KHUÔN MẶT (XÁC THỰC)</p>
             </div>
           </div>
         </div>
@@ -100,6 +113,42 @@
 
     </div>
 
+    <!-- PARKING MAP WORKSPACE (SƠ ĐỒ BÃI XE ĐƠN GIẢN) -->
+    <div class="workspace" id="mapWorkspace" style="display:none">
+      <div class="map-header-simple">
+        <div class="panel-title" style="margin:0">SƠ ĐỒ VỊ TRÍ BÃI XE</div>
+        <div class="map-search-simple">
+          <input type="text" id="mapSearchInput" placeholder="Nhập biển số để tìm xe..." oninput="highlightSlotBySearch()">
+          <button class="search-btn-simple" onclick="highlightSlotBySearch()">Tìm xe</button>
+        </div>
+      </div>
+
+      <div class="map-center-container">
+        <!-- Compact Seat-style Grid -->
+        <div class="compact-grid-box" id="slotsGridContainer">
+          <div style="text-align:center; padding:20px; color:#6b7280;">Đang tải sơ đồ...</div>
+        </div>
+
+        <!-- Minimal Detail Info Bar -->
+        <div class="slot-info-bar" id="slotInfoBar">
+          <span id="infoBarText">Nhấp vào ô bất kỳ trên sơ đồ để xem thông tin chi tiết xe.</span>
+        </div>
+
+        <!-- Clean Reference-Style Legend -->
+        <div class="clean-legend">
+          <div class="legend-item-clean">
+            <span class="legend-color-box sample-free"></span> <span>Thường (Ô trống)</span>
+          </div>
+          <div class="legend-item-clean">
+            <span class="legend-color-box sample-occupied"></span> <span>Đã đỗ xe</span>
+          </div>
+          <div class="legend-item-clean">
+            <span class="legend-color-box sample-search"></span> <span>Xe đang tìm</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- LIST WORKSPACE (XE TRONG BÃI) -->
     <div class="workspace" id="listWorkspace" style="display:none">
       <div class="panel-title" style="margin-bottom:16px">DANH SÁCH TẤT CẢ XE ĐANG GỬI TRONG BÃI</div>
@@ -107,15 +156,17 @@
         <thead>
           <tr>
             <th>MÃ VÉ</th>
+            <th>VỊ TRÍ Ô ĐỖ</th>
             <th>BIỂN SỐ XE</th>
             <th>ẢNH LÚC VÀO BÃI</th>
+            <th>ẢNH KHUÔN MẶT VÀO</th>
             <th>THỜI GIAN VÀO BÃI</th>
             <th>TRẠNG THÁI</th>
             <th>THAO TÁC</th>
           </tr>
         </thead>
         <tbody id="vehicleTableBody">
-          <tr><td colspan="6" style="text-align:center">Đang tải danh sách xe...</td></tr>
+          <tr><td colspan="8" style="text-align:center">Đang tải danh sách xe...</td></tr>
         </tbody>
       </table>
     </div>

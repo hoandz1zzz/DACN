@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tra cứu vị trí xe</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background-color: #f3f4f6;
+      font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    /* Mobile Device Frame Container */
+    .mobile-screen {
+      width: 100%;
+      max-width: 420px;
+      background-color: #faf8f0;
+      min-height: 100vh;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Mobile Top Header */
+    .mobile-header {
+      background-color: #1d4ed8;
+      color: #ffffff;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .mobile-header h1 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin: 0 0 4px 0;
+    }
+
+    .mobile-header p {
+      font-size: 0.8rem;
+      margin: 0;
+      opacity: 0.9;
+    }
+
+    /* Mobile Search Bar */
+    .mobile-body {
+      padding: 16px;
+      flex: 1;
+    }
+
+    .mobile-search-card {
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    .mobile-search-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+
+    .mobile-search-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .mobile-search-row input {
+      flex: 1;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      border: 1px solid #9ca3af;
+      border-radius: 6px;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .mobile-search-row button {
+      background-color: #1d4ed8;
+      color: #ffffff;
+      border: none;
+      padding: 10px 16px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Status Message */
+    .mobile-status {
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #6b7280;
+      padding: 20px 10px;
+    }
+
+    /* Result Card */
+    .mobile-result-card {
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .mobile-slot-badge-large {
+      background-color: #eff6ff;
+      border: 1.5px solid #1d4ed8;
+      color: #1d4ed8;
+      text-align: center;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+    }
+
+    .mobile-slot-badge-large .slot-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #4b5563;
+      text-transform: uppercase;
+    }
+
+    .mobile-slot-badge-large .slot-value {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #1d4ed8;
+    }
+
+    .mobile-info-list {
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .mobile-info-item {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed #e5e7eb;
+      padding-bottom: 4px;
+    }
+
+    .mobile-images-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .mobile-img-box {
+      text-align: center;
+    }
+
+    .mobile-img-box p {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #6b7280;
+      margin: 0 0 4px 0;
+    }
+
+    .mobile-img-box img {
+      width: 110px;
+      height: 75px;
+      object-fit: contain;
+      border: 1px solid #d1d5db;
+      background: #f3f4f6;
+      border-radius: 4px;
+    }
+
+    .mobile-img-box img.face-circle {
+      width: 65px;
+      height: 65px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #1d4ed8;
+      margin: 5px auto 0 auto;
+      display: block;
+    }
+
+    /* Mobile Mini Map */
+    .mobile-map-card {
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .mobile-map-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 10px;
+      color: #111827;
+    }
+
+    .mobile-grid-box {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .mobile-slot-item {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 4px;
+      background: #ffffff;
+    }
+
+    .mobile-slot-item.sample-search {
+      border: 2px solid #ca8a04 !important;
+      background-color: #fde047 !important;
+      color: #000000 !important;
+      font-weight: 900 !important;
+    }
+
+    .slot-box-neutral {
+      border: 1px solid #d1d5db;
+      color: #9ca3af;
+      background-color: #ffffff;
+    }
+
+    .mobile-legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      font-size: 0.8rem;
+      color: #374151;
+      font-weight: 600;
+    }
+
+    .legend-color-box {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      margin-right: 6px;
+    }
+
+    .legend-color-box.sample-search {
+      border: 1.5px solid #ca8a04;
+      background-color: #fde047;
+    }
+
+    .legend-color-box.slot-box-neutral {
+      border: 1px solid #d1d5db;
+      background-color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-screen">
+    <!-- Header -->
+    <div class="mobile-header">
+      <h1>TRA CỨU VỊ TRÍ XE</h1>
+      <p>Bãi xe thông minh - Tra cứu vị trí đỗ</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="mobile-body">
+
+      <!-- Search Card -->
+      <div class="mobile-search-card">
+        <label for="kioskPlateInput" class="mobile-search-label">Nhập biển số xe của bạn:</label>
+        <div class="mobile-search-row">
+          <input type="text" id="kioskPlateInput" placeholder="Ví dụ: 51F-970.22" onkeyup="if(event.key==='Enter') executeLookup()">
+          <button onclick="executeLookup()">Tìm xe</button>
+        </div>
+      </div>
+
+      <!-- Initial / Error Message -->
+      <div id="lookupStatusMessage" class="mobile-status">
+        Nhập biển số xe và bấm Tìm xe để hiển thị vị trí đỗ.
+      </div>
+
+      <!-- Result Container -->
+      <div id="lookupResultView" style="display:none;">
+
+        <!-- Location Badge Card -->
+        <div class="mobile-result-card">
+          <div class="mobile-slot-badge-large">
+            <div class="slot-title">Vị trí đỗ xe của bạn</div>
+            <div class="slot-value" id="resSlot">--</div>
+          </div>
+
+          <div class="mobile-info-list">
+            <div class="mobile-info-item"><span>Biển số xe:</span> <strong id="resPlate" style="color:#dc2626;">--</strong></div>
+            <div class="mobile-info-item"><span>Mã vé:</span> <strong id="resTicket">--</strong></div>
+            <div class="mobile-info-item"><span>Giờ vào:</span> <strong id="resTime">--</strong></div>
+          </div>
+
+          <div class="mobile-images-row" id="resImagesBox">
+            <!-- Images populated by JS -->
+          </div>
+        </div>
+
+        <!-- Seat Grid Map -->
+        <div class="mobile-map-card">
+          <div class="mobile-map-title">SƠ ĐỒ VỊ TRÍ ĐỖ XE</div>
+          <div class="mobile-grid-box" id="miniMapSlotsGrid">
+            <!-- 32 slots rendered by JS -->
+          </div>
+
+          <div class="mobile-legend">
+            <div style="display:flex; align-items:center;"><span class="legend-color-box sample-search"></span> Vị trí xe của bạn</div>
+            <div style="display:flex; align-items:center;"><span class="legend-color-box slot-box-neutral"></span> Các vị trí khác</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script src="lookup.js"></script>
+</body>
+</html>

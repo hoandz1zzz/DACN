@@ -290,11 +290,20 @@ body {
 }
 
 .table-img {
-  width: 120px;
-  height: 70px;
+  width: 100px;
+  height: 60px;
   object-fit: contain;
   border: 1px solid #000;
   background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.face-table-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #1d4ed8;
 }
 
 .badge-in {
@@ -321,4 +330,275 @@ body {
 .delete-btn:hover {
   background-color: #dc2626;
   transform: scale(1.05);
+}
+
+/* Slot Badge Table */
+.slot-badge-table {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1.5px solid #3b82f6;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+/* Clean Reference-Style Parking Map Layout */
+.map-header-simple {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  background: #ffffff;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+.map-search-simple {
+  display: flex;
+  gap: 8px;
+}
+
+.map-search-simple input {
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  border: 1px solid #9ca3af;
+  border-radius: 4px;
+  width: 260px;
+}
+
+.search-btn-simple {
+  background-color: #1d4ed8;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.map-center-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #faf8f0;
+  padding: 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.compact-grid-box {
+  display: grid;
+  grid-template-columns: repeat(8, 44px);
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.compact-slot-box {
+  width: 44px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #ffffff;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.slot-box-free {
+  border: 1.5px solid #22c55e;
+  color: #15803d;
+}
+
+.slot-box-free:hover {
+  background-color: #f0fdf4;
+}
+
+.slot-box-occupied {
+  border: 1.5px solid #ef4444;
+  color: #b91c1c;
+}
+
+.slot-box-occupied:hover {
+  background-color: #fef2f2;
+}
+
+.slot-box-search {
+  border: 2px solid #ca8a04;
+  color: #000000;
+  background-color: #fef08a;
+}
+
+.compact-slot-box.slot-box-search {
+  border: 2px solid #ca8a04 !important;
+  background-color: #fde047 !important;
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+.slot-info-bar {
+  width: 100%;
+  max-width: 500px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  padding: 10px 16px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+  color: #111827;
+}
+
+.clean-legend {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: #374151;
+  font-weight: 600;
+}
+
+.legend-item-clean {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-color-box {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+.legend-color-box.sample-free {
+  border: 1.5px solid #22c55e;
+  background-color: #ffffff;
+}
+
+.legend-color-box.sample-occupied {
+  border: 1.5px solid #ef4444;
+  background-color: #ffffff;
+}
+
+.legend-color-box.sample-search {
+  border: 1.5px solid #ca8a04;
+  background-color: #fde047;
+}
+
+/* Lookup Workspace Portal Styling */
+.lookup-input-card {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.lookup-label {
+  display: block;
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin-bottom: 10px;
+  color: #111827;
+}
+
+.lookup-input-group {
+  display: flex;
+  gap: 10px;
+}
+
+.lookup-input-group input {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 1rem;
+  border: 1px solid #9ca3af;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.lookup-result-card {
+  background: #ffffff;
+  border: 1.5px solid #1d4ed8;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.lookup-card-header {
+  background: #1d4ed8;
+  color: #ffffff;
+  padding: 12px 20px;
+}
+
+.lookup-card-header h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.lookup-card-body {
+  padding: 20px;
+}
+
+.lookup-detail-grid {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+.lookup-info-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lookup-data-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #e5e7eb;
+  font-size: 1rem;
+}
+
+.lookup-img-col {
+  display: flex;
+  gap: 16px;
+}
+
+.lookup-img-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lookup-img-box p {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.lookup-preview-img {
+  width: 140px;
+  height: 90px;
+  object-fit: contain;
+  border: 1px solid #000;
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.lookup-preview-img.face-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #1d4ed8;
 }
