@@ -50,7 +50,18 @@ print(f"Đang tải mô hình EasyOCR (GPU: {use_gpu})...")
 reader = easyocr.Reader(['en'], gpu=use_gpu) 
 
 print("Đang tải mô hình YOLO...")
-model = YOLO('yolov8n.pt') 
+best_pt_paths = ['best.pt', 'AI/best.pt', '/app/best.pt', '/app/AI/best.pt']
+best_path = next((p for p in best_pt_paths if os.path.exists(p)), None)
+
+if best_path:
+    print(f"Đã tìm thấy mô hình YOLOv8 chuyên dụng cho biển số: {best_path}")
+    plate_model = YOLO(best_path)
+else:
+    print("Không thấy best.pt, dùng yolov8n.pt mặc định cho biển số.")
+    plate_model = YOLO('yolov8n.pt')
+
+person_model = YOLO('yolov8n.pt')
+model = plate_model
 
 class ImageRequest(BaseModel):
     image_path: str
@@ -188,7 +199,7 @@ except Exception as e:
 
 def get_face_crop(img_np):
     try:
-        results = model(img_np, verbose=False)
+        results = person_model(img_np, verbose=False)
         for r in results:
             for box in r.boxes:
                 cls_id = int(box.cls[0].item())
@@ -307,4 +318,4 @@ async def verify_face_endpoint(request: FaceMatchRequest):
             "is_match": True,
             "similarity": 100.0,
             "message": f"Lỗi xử lý khuôn mặt: {e}"
-        }
+        }

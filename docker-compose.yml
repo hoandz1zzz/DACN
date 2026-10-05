@@ -20,6 +20,7 @@ services:
       - ./backend/uploads:/app/uploads
       - ./backend/uploads:/app/backend/uploads
       - ./AI/main.py:/app/main.py
+      - ./AI/best.pt:/app/best.pt
       - easyocr_model_data:/root/.EasyOCR
 
   backend: 
