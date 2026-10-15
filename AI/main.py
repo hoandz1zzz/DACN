@@ -292,9 +292,9 @@ async def verify_face_endpoint(request: FaceMatchRequest):
 
     if not path1 or not path2:
         return {
-            "is_match": True,
-            "similarity": 100.0,
-            "message": "Không có ảnh khuôn mặt để đối soát"
+            "is_match": False,
+            "similarity": 0.0,
+            "message": "Không có đầy đủ ảnh khuôn mặt lúc vào và ra để đối soát!"
         }
 
     try:
@@ -315,7 +315,7 @@ async def verify_face_endpoint(request: FaceMatchRequest):
     except Exception as e:
         print(f"Lỗi so sánh khuôn mặt: {e}")
         return {
-            "is_match": True,
-            "similarity": 100.0,
+            "is_match": False,
+            "similarity": 0.0,
             "message": f"Lỗi xử lý khuôn mặt: {e}"
         }

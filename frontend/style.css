@@ -602,3 +602,71 @@ body {
   object-fit: cover;
   border: 2px solid #1d4ed8;
 }
+
+/* User Shift & Auth Bar */
+.user-shift-bar {
+  background-color: #1e293b;
+  color: #ffffff;
+  padding: 8px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  border-bottom: 1px solid #334155;
+}
+
+.shift-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.shift-badge {
+  background-color: #2563eb;
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.shift-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.shift-btn {
+  background-color: #334155;
+  color: #ffffff;
+  border: 1px solid #475569;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.shift-btn:hover {
+  background-color: #475569;
+}
+
+.shift-btn-admin {
+  background-color: #1d4ed8;
+  border-color: #2563eb;
+}
+
+.shift-btn-admin:hover {
+  background-color: #1e40af;
+}
+
+.shift-btn-auth {
+  background-color: #dc2626;
+  border-color: #b91c1c;
+}
+
+.shift-btn-auth:hover {
+  background-color: #b91c1c;
+}

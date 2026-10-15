@@ -3,6 +3,64 @@ let selectedFile = null;
 let selectedFaceFile = null;
 let allSlotsData = [];
 
+window.addEventListener('DOMContentLoaded', () => {
+  renderShiftBar();
+});
+
+function renderShiftBar() {
+  const token = localStorage.getItem('auth_token');
+  const userStr = localStorage.getItem('auth_user');
+
+  const shiftUserEl = document.getElementById('currentShiftUser');
+  const roleBadgeEl = document.getElementById('currentRoleBadge');
+  const adminBtn = document.getElementById('adminPortalBtn');
+  const authBtn = document.getElementById('shiftAuthBtn');
+
+  if (!shiftUserEl) return;
+
+  if (token && userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      shiftUserEl.textContent = `${user.full_name} (${user.username})`;
+      roleBadgeEl.textContent = user.role === 'ADMIN' ? 'QUẢN TRỊ VIÊN' : 'BẢO VỆ';
+      roleBadgeEl.style.display = 'inline-block';
+      roleBadgeEl.style.backgroundColor = user.role === 'ADMIN' ? '#2563eb' : '#15803d';
+
+      if (user.role === 'ADMIN') {
+        adminBtn.style.display = 'inline-block';
+      } else {
+        adminBtn.style.display = 'none';
+      }
+
+      authBtn.textContent = 'Đổi Ca / Đăng Xuất';
+      authBtn.className = 'shift-btn shift-btn-auth';
+    } catch (e) {
+      clearShift();
+    }
+  } else {
+    clearShift();
+  }
+
+  function clearShift() {
+    shiftUserEl.textContent = 'Chưa đăng nhập (Khách)';
+    roleBadgeEl.style.display = 'none';
+    adminBtn.style.display = 'none';
+    authBtn.textContent = 'Đăng Nhập';
+    authBtn.className = 'shift-btn';
+    authBtn.style.backgroundColor = '#1d4ed8';
+    authBtn.style.borderColor = '#1e40af';
+  }
+}
+
+function handleShiftAuthAction() {
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+  }
+  window.location.href = '/login';
+}
+
 function switchMode(mode) {
   currentMode = mode;
   selectedFile = null;
@@ -170,7 +228,14 @@ async function deleteVehicle(id) {
   if (!confirm(`Bạn có chắc chắn muốn xóa lượt gửi xe #${id} khỏi bãi?`)) return;
 
   try {
-    const response = await fetch(`/api/vehicles/${id}`, { method: 'DELETE' });
+    const headers = {};
+    const token = localStorage.getItem('auth_token');
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`/api/vehicles/${id}`, { 
+      method: 'DELETE',
+      headers: headers
+    });
     const data = await response.json();
     if (response.ok) {
       fetchVehiclesList();
@@ -262,8 +327,13 @@ async function processAction(isOverride = false) {
   const endpoint = currentMode === 'entry' ? '/api/entry' : '/api/exit';
 
   try {
+    const headers = {};
+    const token = localStorage.getItem('auth_token');
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const response = await fetch(endpoint, {
       method: 'POST',
+      headers: headers,
       body: formData
     });
 

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng Điều Khiển Quản Trị Viên - Hệ Thống Bãi Xe Thông Minh</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background-color: #f3f4f6;
+      font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #111827;
+      min-height: 100vh;
+    }
+
+    /* Admin Navigation Top Header */
+    .admin-navbar {
+      background-color: #1e3a8a;
+      color: #ffffff;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid #172554;
+    }
+
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .admin-brand h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .admin-user-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.9rem;
+    }
+
+    .admin-badge {
+      background-color: #2563eb;
+      color: #ffffff;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+
+    .btn-nav {
+      background-color: #ffffff;
+      color: #1e3a8a;
+      border: 1px solid #cbd5e1;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background-color 0.2s;
+    }
+
+    .btn-nav:hover {
+      background-color: #f1f5f9;
+    }
+
+    .btn-logout {
+      background-color: #dc2626;
+      color: #ffffff;
+      border: none;
+    }
+
+    .btn-logout:hover {
+      background-color: #b91c1c;
+    }
+
+    /* Main Content Layout */
+    .admin-container {
+      max-width: 1240px;
+      margin: 20px auto;
+      padding: 0 16px;
+    }
+
+    /* Nav Tabs Bar */
+    .admin-tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 2px solid #cbd5e1;
+      margin-bottom: 20px;
+    }
+
+    .admin-tab-btn {
+      padding: 10px 18px;
+      background-color: #e2e8f0;
+      border: 1px solid #cbd5e1;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .admin-tab-btn.active {
+      background-color: #ffffff;
+      color: #1e3a8a;
+      border-color: #cbd5e1;
+      border-top: 3px solid #1e3a8a;
+      margin-bottom: -2px;
+      padding-bottom: 12px;
+    }
+
+    /* Section Views */
+    .admin-tab-pane {
+      display: none;
+    }
+
+    .admin-tab-pane.active {
+      display: block;
+    }
+
+    /* KPI Metric Cards Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background-color: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 18px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+
+    .kpi-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    .kpi-sub {
+      font-size: 0.8rem;
+      color: #475569;
+    }
+
+    .text-revenue { color: #15803d; }
+    .text-occupied { color: #dc2626; }
+    .text-warning { color: #b45309; }
+    .text-info { color: #2563eb; }
+
+    /* Admin Cards & Tables */
+    .admin-card {
+      background-color: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+
+    .admin-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 12px;
+    }
+
+    .admin-card-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #1e293b;
+      margin: 0;
+    }
+
+    /* Filter Toolbars */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+      background-color: #f8fafc;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .filter-item input, .filter-item select {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .btn-action {
+      background-color: #1d4ed8;
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn-action:hover {
+      background-color: #1e40af;
+    }
+
+    .btn-secondary {
+      background-color: #64748b;
+    }
+
+    .btn-secondary:hover {
+      background-color: #475569;
+    }
+
+    .btn-success {
+      background-color: #16a34a;
+    }
+
+    .btn-success:hover {
+      background-color: #15803d;
+    }
+
+    /* Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      text-align: left;
+    }
+
+    .data-table th {
+      background-color: #f1f5f9;
+      color: #334155;
+      font-weight: 800;
+      padding: 10px 12px;
+      border-bottom: 2px solid #cbd5e1;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: middle;
+    }
+
+    .data-table tr:hover {
+      background-color: #f8fafc;
+    }
+
+    .badge-status-in {
+      background-color: #dcfce7;
+      color: #15803d;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+
+    .badge-status-out {
+      background-color: #f1f5f9;
+      color: #64748b;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+
+    .badge-override {
+      background-color: #fef3c7;
+      color: #b45309;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 800;
+      font-size: 0.75rem;
+    }
+
+    .thumb-img {
+      width: 50px;
+      height: 38px;
+      object-fit: cover;
+      border-radius: 3px;
+      border: 1px solid #cbd5e1;
+      cursor: pointer;
+    }
+
+    /* Modal Form Styles */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-card {
+      background-color: #ffffff;
+      width: 100%;
+      max-width: 500px;
+      border-radius: 6px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      padding: 24px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 10px;
+    }
+
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: #64748b;
+    }
+
+    .modal-form-group {
+      margin-bottom: 14px;
+    }
+
+    .modal-form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+
+    .modal-form-group input, .modal-form-group select {
+      width: 100%;
+      padding: 9px 12px;
+      font-size: 0.9rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <div class="admin-navbar">
+    <div class="admin-brand">
+      <h1>HỆ THỐNG QUẢN TRỊ BÃI XE THÔNG MINH (ADMIN PORTAL)</h1>
+    </div>
+    <div class="admin-user-info">
+      <span>Đang đăng nhập: <strong id="adminFullName">Admin</strong> (<span id="adminUsername">admin</span>)</span>
+      <span class="admin-badge">QUẢN TRỊ VIÊN</span>
+      <a href="/" class="btn-nav">Màn Hình Trực Bãi</a>
+      <button onclick="logoutAdmin()" class="btn-nav btn-logout">Đăng Xuất</button>
+    </div>
+  </div>
+
+  <div class="admin-container">
+
+    <!-- Tab Bar -->
+    <div class="admin-tabs">
+      <button class="admin-tab-btn active" onclick="switchAdminTab('dashboard')">Bảng Điều Khiển (Tổng Quan)</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('history')">Lịch Sử Gửi Xe & Báo Cáo</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('security')">Nhật Ký Can Thiệp An Ninh</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('staff')">Quản Lý Nhân Viên</button>
+    </div>
+
+    <!-- TAB 1: DASHBOARD TỔNG QUAN -->
+    <div id="tab-dashboard" class="admin-tab-pane active">
+      <!-- KPI Metric Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-title">Doanh Thu Hôm Nay</div>
+          <div class="kpi-value text-revenue" id="kpiRevenue">0 VNĐ</div>
+          <div class="kpi-sub">Tổng tiền thu từ các lượt xe ra hôm nay</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Hiện Trạng Bãi Xe</div>
+          <div class="kpi-value text-occupied" id="kpiOccupancy">0 / 32 Ô</div>
+          <div class="kpi-sub" id="kpiAvailable">Còn trống: 32 vị trí</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Lượt Xe Ra / Vào Hôm Nay</div>
+          <div class="kpi-value text-info" id="kpiTraffic">0 vào / 0 ra</div>
+          <div class="kpi-sub">Lưu lượng phương tiện hoạt động trong ngày</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Lượt Can Thiệp An Ninh (Override)</div>
+          <div class="kpi-value text-warning" id="kpiOverrides">0 Lượt</div>
+          <div class="kpi-sub">Bảo vệ can thiệp bỏ qua cảnh báo khuôn mặt</div>
+        </div>
+      </div>
+
+      <!-- Recent Sessions Table -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2 class="admin-card-title">Các Lượt Gửi Xe Mới Nhất</h2>
+          <button class="btn-action btn-secondary" onclick="loadDashboardStats()">Làm mới dữ liệu</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>MÃ VÉ</th>
+                <th>Ô ĐỖ</th>
+                <th>BIỂN SỐ XE</th>
+                <th>GIỜ VÀO</th>
+                <th>GIỜ RA</th>
+                <th>NHÂN VIÊN VÀO</th>
+                <th>NHÂN VIÊN RA</th>
+                <th>TIỀN PHÍ</th>
+                <th>TRẠNG THÁI</th>
+              </tr>
+            </thead>
+            <tbody id="recentTableBody">
+              <tr><td colspan="9" style="text-align:center; padding:16px;">Đang tải dữ liệu...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: LỊCH SỬ GỬI XE & BÁO CÁO -->
+    <div id="tab-history" class="admin-tab-pane">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2 class="admin-card-title">Lịch Sử Gửi Xe Toàn Diện</h2>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-item">
+            <span>Ngày:</span>
+            <input type="date" id="historyDateFilter">
+          </div>
+          <div class="filter-item">
+            <span>Biển số xe:</span>
+            <input type="text" id="historyPlateFilter" placeholder="Ví dụ: 51F...">
+          </div>
+          <div class="filter-item">
+            <span>Trạng thái:</span>
+            <select id="historyStatusFilter">
+              <option value="ALL">Tất cả</option>
+              <option value="IN">Đang trong bãi (IN)</option>
+              <option value="OUT">Đã rời bãi (OUT)</option>
+            </select>
+          </div>
+          <button class="btn-action" onclick="loadHistoryData()">Tìm kiếm</button>
+          <button class="btn-action btn-secondary" onclick="resetHistoryFilters()">Đặt lại</button>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>MÃ VÉ</th>
+                <th>VỊ TRÍ</th>
+                <th>BIỂN SỐ XE</th>
+                <th>ẢNH VÀO</th>
+                <th>GIỜ VÀO</th>
+                <th>NHÂN VIÊN VÀO</th>
+                <th>GIỜ RA</th>
+                <th>NHÂN VIÊN RA</th>
+                <th>TIỀN PHÍ</th>
+                <th>TRẠNG THÁI</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr><td colspan="10" style="text-align:center; padding:16px;">Đang tải danh sách...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: NHẬT KÝ CAN THIỆP AN NINH (OVERRIDE AUDIT LOG) -->
+    <div id="tab-security" class="admin-tab-pane">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2 class="admin-card-title">Nhật Ký Giám Sát Can Thiệp An Ninh (Override Logs)</h2>
+          <button class="btn-action btn-secondary" onclick="loadSecurityLogs()">Làm mới</button>
+        </div>
+        <p style="font-size:0.85rem; color:#64748b; margin-top:-8px; margin-bottom:16px;">
+          Ghi nhận tất cả các trường hợp AI phát hiện khuôn mặt không trùng khớp (độ khớp dưới 40%) nhưng bảo vệ đã bấm nút xác nhận cho xe ra (Override).
+        </p>
+
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>MÃ VÉ</th>
+                <th>BIỂN SỐ</th>
+                <th>ẢNH MẶT VÀO</th>
+                <th>ẢNH MẶT RA</th>
+                <th>THỜI GIAN RA</th>
+                <th>NHÂN VIÊN DUYỆT XE RA</th>
+                <th>LÝ DO / GHI CHÚ CAN THIỆP</th>
+                <th>TIỀN THU</th>
+              </tr>
+            </thead>
+            <tbody id="securityTableBody">
+              <tr><td colspan="8" style="text-align:center; padding:16px;">Đang tải dữ liệu can thiệp...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: QUẢN LÝ NHÂN VIÊN -->
+    <div id="tab-staff" class="admin-tab-pane">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2 class="admin-card-title">Danh Sách Tài Khoản Nhân Viên & Cán Bộ</h2>
+          <button class="btn-action btn-success" onclick="openCreateUserModal()">+ Thêm Tài Khoản Mới</button>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>TÊN ĐĂNG NHẬP</th>
+                <th>HỌ VÀ TÊN</th>
+                <th>VAI TRÒ</th>
+                <th>SỐ ĐIỆN THOẠI</th>
+                <th>TRẠNG THÁI</th>
+                <th>NGÀY TẠO</th>
+                <th>THAO TÁC</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr><td colspan="8" style="text-align:center; padding:16px;">Đang tải danh sách nhân viên...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL: TẠO / SỬA TÀI KHOẢN NHÂN VIÊN -->
+  <div id="userModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalTitle" class="modal-title">Thêm Tài Khoản Mới</h3>
+        <button class="modal-close" onclick="closeUserModal()">×</button>
+      </div>
+
+      <form id="userForm" onsubmit="handleSaveUser(event)">
+        <input type="hidden" id="editUserId">
+
+        <div class="modal-form-group">
+          <label for="modalUsername">Tên đăng nhập:</label>
+          <input type="text" id="modalUsername" required placeholder="Ví dụ: staff2...">
+        </div>
+
+        <div class="modal-form-group">
+          <label for="modalFullName">Họ và tên:</label>
+          <input type="text" id="modalFullName" required placeholder="Ví dụ: Trần Văn Bảo Vệ...">
+        </div>
+
+        <div class="modal-form-group">
+          <label for="modalPassword">Mật khẩu:</label>
+          <input type="password" id="modalPassword" placeholder="Nhập mật khẩu (Để trống nếu không đổi)...">
+        </div>
+
+        <div class="modal-form-group">
+          <label for="modalRole">Vai trò:</label>
+          <select id="modalRole">
+            <option value="STAFF">Nhân viên bảo vệ (STAFF)</option>
+            <option value="ADMIN">Quản trị viên (ADMIN)</option>
+          </select>
+        </div>
+
+        <div class="modal-form-group">
+          <label for="modalPhone">Số điện thoại:</label>
+          <input type="text" id="modalPhone" placeholder="Ví dụ: 0912345678...">
+        </div>
+
+        <div class="modal-form-group" id="modalStatusGroup" style="display:none;">
+          <label for="modalStatus">Trạng thái:</label>
+          <select id="modalStatus">
+            <option value="ACTIVE">Hoạt động (ACTIVE)</option>
+            <option value="INACTIVE">Khóa tài khoản (INACTIVE)</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-action btn-secondary" onclick="closeUserModal()">Hủy</button>
+          <button type="submit" class="btn-action" id="modalSubmitBtn">Lưu Tài Khoản</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

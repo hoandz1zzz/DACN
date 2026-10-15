@@ -7,6 +7,19 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Shift and Auth Bar -->
+  <div class="user-shift-bar">
+    <div class="shift-info">
+      <span>Ca trực hiện tại: <strong id="currentShiftUser">Chưa đăng nhập</strong></span>
+      <span id="currentRoleBadge" class="shift-badge" style="display:none;">STAFF</span>
+    </div>
+    <div class="shift-actions">
+      <a href="/admin" id="adminPortalBtn" class="shift-btn shift-btn-admin" style="display:none;">Trang Quản Trị (Admin)</a>
+      <a href="/lookup" class="shift-btn">Cổng Tra Cứu Khách Hàng</a>
+      <button onclick="handleShiftAuthAction()" id="shiftAuthBtn" class="shift-btn shift-btn-auth">Đăng Nhập</button>
+    </div>
+  </div>
+
   <!-- Header Bar -->
   <div class="top-header">
     <h1 class="header-title">NHẬN DẠNG BIỂN SỐ XE MÁY VỚI HỆ THỐNG BÃI XE THÔNG MINH</h1>
