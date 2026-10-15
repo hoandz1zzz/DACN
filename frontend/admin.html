@@ -417,7 +417,8 @@
     <!-- Tab Bar -->
     <div class="admin-tabs">
       <button class="admin-tab-btn active" onclick="switchAdminTab('dashboard')">Bảng Điều Khiển (Tổng Quan)</button>
-      <button class="admin-tab-btn" onclick="switchAdminTab('history')">Lịch Sử Gửi Xe & Báo Cáo</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('revenue')">Báo Cáo Doanh Thu (Ngày/Tháng/Năm)</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('history')">Lịch Sử Gửi Xe Toàn Diện</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('security')">Nhật Ký Can Thiệp An Ninh</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('staff')">Quản Lý Nhân Viên</button>
     </div>
@@ -477,7 +478,94 @@
       </div>
     </div>
 
-    <!-- TAB 2: LỊCH SỬ GỬI XE & BÁO CÁO -->
+    <!-- TAB REVENUE: BÁO CÁO DOANH THU (NGÀY / THÁNG / NĂM) -->
+    <div id="tab-revenue" class="admin-tab-pane">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2 class="admin-card-title">Báo Cáo Thống Kê Doanh Thu Chuyên Sâu</h2>
+          <button class="btn-action btn-secondary" onclick="loadRevenueReport()">Tải lại dữ liệu</button>
+        </div>
+
+        <!-- Filter Toolbar -->
+        <div class="filter-bar">
+          <div class="filter-item">
+            <span>Kỳ báo cáo:</span>
+            <select id="revPeriodSelect" onchange="toggleRevenueFilters()">
+              <option value="day">Theo Từng Ngày (Trong Tháng)</option>
+              <option value="month">Theo Từng Tháng (Trong Năm)</option>
+              <option value="year">Theo Từng Năm (Toàn Bộ)</option>
+            </select>
+          </div>
+
+          <div class="filter-item" id="revYearFilterGroup">
+            <span>Năm:</span>
+            <select id="revYearSelect" onchange="loadRevenueReport()">
+              <option value="2026" selected>2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+            </select>
+          </div>
+
+          <div class="filter-item" id="revMonthFilterGroup">
+            <span>Tháng:</span>
+            <select id="revMonthSelect" onchange="loadRevenueReport()">
+              <option value="1">Tháng 1</option>
+              <option value="2">Tháng 2</option>
+              <option value="3">Tháng 3</option>
+              <option value="4">Tháng 4</option>
+              <option value="5">Tháng 5</option>
+              <option value="6">Tháng 6</option>
+              <option value="7">Tháng 7</option>
+              <option value="8">Tháng 8</option>
+              <option value="9">Tháng 9</option>
+              <option value="10" selected>Tháng 10</option>
+              <option value="11">Tháng 11</option>
+              <option value="12">Tháng 12</option>
+            </select>
+          </div>
+
+          <button class="btn-action" onclick="loadRevenueReport()">Xem Báo Cáo</button>
+        </div>
+
+        <!-- 3 Summary KPI Cards for the period -->
+        <div class="kpi-grid" style="margin-top: 16px;">
+          <div class="kpi-card" style="border-left: 4px solid #16a34a;">
+            <div class="kpi-title">Tổng Doanh Thu Kỳ Này</div>
+            <div class="kpi-value text-revenue" id="revTotalRevenue">0 VNĐ</div>
+            <div class="kpi-sub" id="revSubPeriodLabel">Tổng thu trong kỳ được chọn</div>
+          </div>
+          <div class="kpi-card" style="border-left: 4px solid #2563eb;">
+            <div class="kpi-title">Tổng Lượt Xe Đã Thu Phí</div>
+            <div class="kpi-value text-info" id="revTotalVehicles">0 Lượt</div>
+            <div class="kpi-sub">Lượt xe hoàn thành gửi và rời bãi</div>
+          </div>
+          <div class="kpi-card" style="border-left: 4px solid #b45309;">
+            <div class="kpi-title">Doanh Thu Bình Quân Mỗi Xe</div>
+            <div class="kpi-value text-warning" id="revAvgPerVehicle">0 VNĐ / xe</div>
+            <div class="kpi-sub">Mức thu trung bình trên mỗi lượt xe</div>
+          </div>
+        </div>
+
+        <!-- Breakdown Table -->
+        <div style="overflow-x:auto; margin-top: 20px;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th id="revTableColHeader">MỐC THỜI GIAN</th>
+                <th>SỐ LƯỢT XE PHỤC VỤ</th>
+                <th>TỶ TRỌNG ĐÓNG GÓP (%)</th>
+                <th>TỔNG DOANH THU THU ĐƯỢC</th>
+              </tr>
+            </thead>
+            <tbody id="revenueTableBody">
+              <tr><td colspan="4" style="text-align:center; padding:16px;">Đang tải dữ liệu báo cáo...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: LỊCH SỬ GỬI XE TOÀN DIỆN -->
     <div id="tab-history" class="admin-tab-pane">
       <div class="admin-card">
         <div class="admin-card-header">

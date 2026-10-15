@@ -62,6 +62,7 @@ function switchAdminTab(tabName) {
   event.target.classList.add('active');
 
   if (tabName === 'dashboard') loadDashboardStats();
+  else if (tabName === 'revenue') loadRevenueReport();
   else if (tabName === 'history') loadHistoryData();
   else if (tabName === 'security') loadSecurityLogs();
   else if (tabName === 'staff') loadStaffList();
@@ -116,6 +117,111 @@ async function loadDashboardStats() {
 
   } catch (err) {
     recentTbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:red; padding:16px;">Lỗi kết nối tới máy chủ!</td></tr>';
+  }
+}
+
+// --- TAB REVENUE: BÁO CÁO DOANH THU CHUYÊN SÂU ---
+function toggleRevenueFilters() {
+  const period = document.getElementById('revPeriodSelect').value;
+  const yearGroup = document.getElementById('revYearFilterGroup');
+  const monthGroup = document.getElementById('revMonthFilterGroup');
+
+  if (period === 'day') {
+    yearGroup.style.display = 'flex';
+    monthGroup.style.display = 'flex';
+  } else if (period === 'month') {
+    yearGroup.style.display = 'flex';
+    monthGroup.style.display = 'none';
+  } else { // 'year'
+    yearGroup.style.display = 'none';
+    monthGroup.style.display = 'none';
+  }
+
+  loadRevenueReport();
+}
+
+async function loadRevenueReport() {
+  const tbody = document.getElementById('revenueTableBody');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:16px;">Đang tải dữ liệu báo cáo...</td></tr>';
+
+  const period = document.getElementById('revPeriodSelect').value;
+  const year = document.getElementById('revYearSelect').value;
+  const month = document.getElementById('revMonthSelect').value;
+
+  const colHeader = document.getElementById('revTableColHeader');
+  if (period === 'day') colHeader.textContent = 'MỐC NGÀY';
+  else if (period === 'month') colHeader.textContent = 'MỐC THÁNG';
+  else colHeader.textContent = 'MỐC NĂM';
+
+  try {
+    const res = await fetch(`/api/admin/revenue-report?period=${period}&year=${year}&month=${month}`, {
+      headers: getAuthHeader()
+    });
+
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) logoutAdmin();
+      return;
+    }
+
+    const report = await res.json();
+    const summary = report.summary || {};
+    const dataList = report.data || [];
+
+    document.getElementById('revTotalRevenue').textContent = `${(summary.total_revenue || 0).toLocaleString('vi-VN')} VNĐ`;
+    document.getElementById('revTotalVehicles').textContent = `${(summary.total_vehicles || 0).toLocaleString('vi-VN')} Lượt`;
+    document.getElementById('revAvgPerVehicle').textContent = `${(summary.avg_per_vehicle || 0).toLocaleString('vi-VN')} đ / xe`;
+
+    if (period === 'day') {
+      document.getElementById('revSubPeriodLabel').textContent = `Tháng ${month}/${year}`;
+    } else if (period === 'month') {
+      document.getElementById('revSubPeriodLabel').textContent = `Cả năm ${year}`;
+    } else {
+      document.getElementById('revSubPeriodLabel').textContent = `Toàn bộ các năm`;
+    }
+
+    if (dataList.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:16px;">Không có dữ liệu lượt xe hoàn thành trong kỳ này.</td></tr>';
+      return;
+    }
+
+    const maxRev = Math.max(...dataList.map(d => parseInt(d.total_revenue) || 0), 1);
+
+    tbody.innerHTML = dataList.map(item => {
+      const rev = parseInt(item.total_revenue) || 0;
+      const count = parseInt(item.total_vehicles) || 0;
+      const pct = summary.total_revenue > 0 ? Math.round((rev / summary.total_revenue) * 100) : 0;
+      const barPct = Math.round((rev / maxRev) * 100);
+
+      let labelDisplay = item.time_label;
+      if (period === 'day') {
+        const parts = item.time_label.split('-');
+        if (parts.length === 3) labelDisplay = `Ngày ${parts[2]}/${parts[1]}/${parts[0]}`;
+      } else if (period === 'month') {
+        const parts = item.time_label.split('-');
+        if (parts.length === 2) labelDisplay = `Tháng ${parts[1]}/${parts[0]}`;
+      } else {
+        labelDisplay = `Năm ${item.time_label}`;
+      }
+
+      return `
+        <tr>
+          <td><strong style="color:#1e3a8a;">${labelDisplay}</strong></td>
+          <td><strong>${count}</strong> lượt xe</td>
+          <td style="min-width: 140px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.78rem; font-weight:700;">
+              <span>${pct}%</span>
+            </div>
+            <div style="background-color:#e2e8f0; border-radius:4px; height:8px; width:100%; overflow:hidden; margin-top:3px;">
+              <div style="background-color:#16a34a; height:100%; width:${barPct}%; border-radius:4px;"></div>
+            </div>
+          </td>
+          <td><strong style="color:#15803d; font-size:1.05rem;">${rev.toLocaleString('vi-VN')} VNĐ</strong></td>
+        </tr>
+      `;
+    }).join('');
+
+  } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red; padding:16px;">Lỗi tải báo cáo doanh thu!</td></tr>';
   }
 }
 

@@ -570,6 +570,84 @@ app.get('/api/admin/history', authenticateToken, requireAdmin, (req, res) => {
     });
 });
 
+// 2B. Báo cáo Doanh thu Chuyên sâu (Theo Ngày, Theo Tháng, Theo Năm)
+app.get('/api/admin/revenue-report', authenticateToken, requireAdmin, (req, res) => {
+    const period = req.query.period || 'day'; // 'day', 'month', 'year'
+    const now = new Date();
+    const year = req.query.year ? parseInt(req.query.year) : now.getFullYear();
+    const month = req.query.month ? parseInt(req.query.month) : (now.getMonth() + 1);
+
+    let sql = '';
+    let params = [];
+
+    if (period === 'day') {
+        sql = `
+            SELECT 
+                DATE_FORMAT(exit_time, '%Y-%m-%d') as time_label,
+                COUNT(*) as total_vehicles,
+                COALESCE(SUM(fee), 0) as total_revenue
+            FROM parking_sessions
+            WHERE status = 'OUT' AND exit_time IS NOT NULL
+              AND YEAR(exit_time) = ? AND MONTH(exit_time) = ?
+            GROUP BY DATE_FORMAT(exit_time, '%Y-%m-%d')
+            ORDER BY time_label DESC
+        `;
+        params = [year, month];
+    } else if (period === 'month') {
+        sql = `
+            SELECT 
+                DATE_FORMAT(exit_time, '%Y-%m') as time_label,
+                MONTH(exit_time) as month_number,
+                COUNT(*) as total_vehicles,
+                COALESCE(SUM(fee), 0) as total_revenue
+            FROM parking_sessions
+            WHERE status = 'OUT' AND exit_time IS NOT NULL
+              AND YEAR(exit_time) = ?
+            GROUP BY DATE_FORMAT(exit_time, '%Y-%m'), MONTH(exit_time)
+            ORDER BY month_number DESC
+        `;
+        params = [year];
+    } else { // 'year'
+        sql = `
+            SELECT 
+                DATE_FORMAT(exit_time, '%Y') as time_label,
+                COUNT(*) as total_vehicles,
+                COALESCE(SUM(fee), 0) as total_revenue
+            FROM parking_sessions
+            WHERE status = 'OUT' AND exit_time IS NOT NULL
+            GROUP BY DATE_FORMAT(exit_time, '%Y')
+            ORDER BY time_label DESC
+            LIMIT 10
+        `;
+        params = [];
+    }
+
+    db.query(sql, params, (err, results) => {
+        if (err) return res.status(500).json({ error: 'Lỗi truy vấn báo cáo doanh thu: ' + err.message });
+
+        let totalRevenue = 0;
+        let totalVehicles = 0;
+
+        results.forEach(row => {
+            totalRevenue += parseInt(row.total_revenue) || 0;
+            totalVehicles += parseInt(row.total_vehicles) || 0;
+        });
+
+        const avgPerVehicle = totalVehicles > 0 ? Math.round(totalRevenue / totalVehicles) : 0;
+
+        res.json({
+            period: period,
+            filter: { year, month },
+            summary: {
+                total_revenue: totalRevenue,
+                total_vehicles: totalVehicles,
+                avg_per_vehicle: avgPerVehicle
+            },
+            data: results
+        });
+    });
+});
+
 // 3. Nhật ký Giám sát An ninh (Audit Logs cho Override)
 app.get('/api/admin/security-logs', authenticateToken, requireAdmin, (req, res) => {
     const sql = `
